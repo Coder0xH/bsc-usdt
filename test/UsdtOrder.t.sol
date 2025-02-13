@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
-import "../src/BrovotePayment.sol";
+import "../src/UsdtOrder.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 // Ownable errors
@@ -10,34 +10,23 @@ error OwnableUnauthorizedAccount(address account);
 
 // Mock token for testing
 contract MockToken is ERC20 {
-    constructor() ERC20("Mock Brovote", "BROV") {
-        _mint(msg.sender, 1000000 * 10**decimals());
+    constructor() ERC20("Mock USDT", "USDT") {
+        _mint(msg.sender, 1000000 * 10 ** decimals());
     }
 }
 
-contract BrovotePaymentTest is Test {
-    BrovotePayment public payment;
+contract UsdtOrderTest is Test {
+    UsdtOrder public payment;
     MockToken public token;
     address public owner;
     address public receiver;
     address public user;
 
-    event PaymentMade(
-        string orderId,
-        address user,
-        uint256 amount,
-        uint256 timestamp
-    );
+    event PaymentMade(string orderId, address user, uint256 amount, uint256 timestamp);
 
-    event ReceiverUpdated(
-        address oldReceiver,
-        address newReceiver
-    );
+    event ReceiverUpdated(address oldReceiver, address newReceiver);
 
-    event TokenAddressUpdated(
-        address oldToken,
-        address newToken
-    );
+    event TokenAddressUpdated(address oldToken, address newToken);
 
     function setUp() public {
         // Setup accounts
@@ -50,24 +39,20 @@ contract BrovotePaymentTest is Test {
 
         // Deploy payment contract
         vm.prank(owner);
-        payment = new BrovotePayment(
-            address(token),
-            receiver,
-            owner
-        );
+        payment = new UsdtOrder(address(token), receiver, owner);
 
         // Give user some tokens
-        token.transfer(user, 1000 * 10**token.decimals());
+        token.transfer(user, 1000 * 10 ** token.decimals());
     }
 
     function test_InitialState() public view {
-        assertEq(address(payment.brovote()), address(token));
+        assertEq(address(payment.usdt()), address(token));
         assertEq(payment.receiver(), receiver);
         assertEq(payment.owner(), owner);
     }
 
     function test_Pay() public {
-        uint256 amount = 100 * 10**token.decimals();
+        uint256 amount = 100 * 10 ** token.decimals();
         string memory orderId = "ORDER_001";
 
         // Approve tokens
@@ -91,7 +76,7 @@ contract BrovotePaymentTest is Test {
 
         // Only owner can set receiver
         vm.prank(owner);
-        
+
         // Expect ReceiverUpdated event
         vm.expectEmit(true, true, true, true);
         emit ReceiverUpdated(receiver, newReceiver);
@@ -105,13 +90,13 @@ contract BrovotePaymentTest is Test {
 
         // Only owner can set token address
         vm.prank(owner);
-        
+
         // Expect TokenAddressUpdated event
         vm.expectEmit(true, true, true, true);
         emit TokenAddressUpdated(address(token), address(newToken));
 
         payment.setTokenAddress(address(newToken));
-        assertEq(address(payment.brovote()), address(newToken));
+        assertEq(address(payment.usdt()), address(newToken));
     }
 
     function test_RevertWhen_PayWithInvalidOrderId() public {
