@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import "../src/UsdtOrder.sol";
+import "../src/Erc20PaymentProcessor.sol";
 
 contract DeployScript is Script {
     function setUp() public {}
@@ -20,9 +20,9 @@ contract DeployScript is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         // Deploy contract
-        UsdtOrder payment = new UsdtOrder(usdtToken, receiver, owner);
+        Erc20PaymentProcessor payment = new Erc20PaymentProcessor(usdtToken, receiver, owner);
 
-        console.log("UsdtOrder deployed to:", address(payment));
+        console.log("Erc20PaymentProcessor deployed to:", address(payment));
         console.log("Token:", usdtToken);
         console.log("Receiver:", receiver);
         console.log("Owner:", owner);

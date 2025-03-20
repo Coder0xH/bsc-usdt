@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
-import "../src/UsdtOrder.sol";
+import "../src/Erc20PaymentProcessor.sol";
 import "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 
 // Ownable errors
@@ -10,13 +10,13 @@ error OwnableUnauthorizedAccount(address account);
 
 // Mock token for testing
 contract MockToken is ERC20 {
-    constructor() ERC20("Mock USDT", "USDT") {
+    constructor() ERC20("Mock Token", "TOKEN") {
         _mint(msg.sender, 1000000 * 10 ** decimals());
     }
 }
 
-contract UsdtOrderTest is Test {
-    UsdtOrder public payment;
+contract Erc20PaymentProcessorTest is Test {
+    Erc20PaymentProcessor public payment;
     MockToken public token;
     address public owner;
     address public receiver;
@@ -39,14 +39,14 @@ contract UsdtOrderTest is Test {
 
         // Deploy payment contract
         vm.prank(owner);
-        payment = new UsdtOrder(address(token), receiver, owner);
+        payment = new Erc20PaymentProcessor(address(token), receiver, owner);
 
         // Give user some tokens
         token.transfer(user, 1000 * 10 ** token.decimals());
     }
 
     function test_InitialState() public view {
-        assertEq(address(payment.usdt()), address(token));
+        assertEq(address(payment.token()), address(token));
         assertEq(payment.receiver(), receiver);
         assertEq(payment.owner(), owner);
     }
@@ -96,7 +96,7 @@ contract UsdtOrderTest is Test {
         emit TokenAddressUpdated(address(token), address(newToken));
 
         payment.setTokenAddress(address(newToken));
-        assertEq(address(payment.usdt()), address(newToken));
+        assertEq(address(payment.token()), address(newToken));
     }
 
     function test_RevertWhen_PayWithInvalidOrderId() public {

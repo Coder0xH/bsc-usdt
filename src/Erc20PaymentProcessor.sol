@@ -6,20 +6,29 @@ import "lib/openzeppelin-contracts/contracts/interfaces/IERC20.sol";
 import "lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import "lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
 
-contract UsdtOrder is Ownable, ReentrancyGuard {
-    IERC20 public usdt;
+contract Erc20PaymentProcessor is Ownable, ReentrancyGuard {
+    IERC20 public token;
     address public receiver;
 
-    event PaymentMade(string orderId, address user, uint256 amount, uint256 timestamp);
+    event PaymentMade(
+        string orderId,
+        address user,
+        uint256 amount,
+        uint256 timestamp
+    );
 
     event ReceiverUpdated(address oldReceiver, address newReceiver);
 
     event TokenAddressUpdated(address oldToken, address newToken);
 
-    constructor(address _usdt, address _receiver, address initialOwner) Ownable(initialOwner) {
-        require(_usdt != address(0), "Invalid usdt address");
+    constructor(
+        address _token,
+        address _receiver,
+        address initialOwner
+    ) Ownable(initialOwner) {
+        require(_token != address(0), "Invalid token address");
         require(_receiver != address(0), "Invalid receiver address");
-        usdt = IERC20(_usdt);
+        token = IERC20(_token);
         receiver = _receiver;
     }
 
@@ -31,7 +40,10 @@ contract UsdtOrder is Ownable, ReentrancyGuard {
     function pay(string memory orderId, uint256 amount) external nonReentrant {
         require(bytes(orderId).length > 0, "Invalid order ID");
         require(amount > 0, "Amount must be greater than 0");
-        require(usdt.transferFrom(msg.sender, receiver, amount), "Transfer failed");
+        require(
+            token.transferFrom(msg.sender, receiver, amount),
+            "Transfer failed"
+        );
 
         emit PaymentMade(orderId, msg.sender, amount, block.timestamp);
     }
@@ -53,8 +65,8 @@ contract UsdtOrder is Ownable, ReentrancyGuard {
      */
     function setTokenAddress(address newToken) external onlyOwner {
         require(newToken != address(0), "Invalid token address");
-        address oldToken = address(usdt);
-        usdt = IERC20(newToken);
+        address oldToken = address(token);
+        token = IERC20(newToken);
         emit TokenAddressUpdated(oldToken, newToken);
     }
 }
