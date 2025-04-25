@@ -52,7 +52,22 @@ $ anvil
 ### Deploy
 
 ```shell
+# 仅部署合约
+$ forge script script/Deploy.s.sol:DeployScript --rpc-url bsc --broadcast
+
+# 部署并自动验证合约（一条龙服务）
 $ forge script script/Deploy.s.sol:DeployScript --rpc-url bsc --broadcast --verify -vvvv
+```
+
+### Verify (如果部署时没有使用--verify参数)
+
+```shell
+$ forge verify-contract --chain bsc <CONTRACT_ADDRESS> src/Erc20PaymentProcessor.sol:Erc20PaymentProcessor --constructor-args <ABI_ENCODED_ARGS> --watch
+```
+
+生成构造函数参数编码：
+```shell
+$ cast abi-encode "constructor(address,address,address)" <TOKEN_ADDRESS> <RECEIVER_ADDRESS> <OWNER_ADDRESS>
 ```
 
 ### Cast
